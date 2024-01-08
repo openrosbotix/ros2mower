@@ -1,0 +1,10 @@
+teleop starten
+ros2 launch hovermower_simulation hm_simulation.launch.py
+
+navigation starten
+ros2 launch hovermower_navigation2 navigation_launch.py use_sim_time:=True
+
+slam starten
+ros2 launch hovermower_navigation2 online_async_launch.py use_sim_time:=True
+
+Karte speichern
