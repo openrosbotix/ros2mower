@@ -1,19 +1,17 @@
 import rclpy
 
 from rclpy.node import Node
-from ros2mower_msgs.srv import GetArea, GetNumOfAreas, MapArea
+from ros2mower_msgs.srv import GetArea, GetNumOfAreas
+from ros2mower_msgs.msg import MapArea
 from geometry_msgs.msg import Polygon, Point32
 import yaml
 
 class MapProvider(Node):
     def __init__(self):
         super().__init__('map_provider')
-        self.declare_parameter('map_file', 'my_map.yaml' )
+        self.declare_parameter('map_file', 'example/mow_area.yaml' )
         
-        #self.publisher_ = self.create_publisher(String, 'topic', 10)
-        #timer_period = 0.5  # seconds
-        #self.timer = self.create_timer(timer_period, self.timer_callback)
-        #self.i = 0
+        self.load_map()
         self.srv = self.create_service(GetArea, 'get_area', self.get_area)
         self.srv = self.create_service(GetNumOfAreas, 'get_num_of_areas', self.get_num_of_areas)
 
@@ -23,6 +21,7 @@ class MapProvider(Node):
         map_file = self.get_parameter('map_file').get_parameter_value().string_value
         with open(map_file, 'r') as f:
             self.map = yaml.safe_load(f)
+            #check and catch exception. 
 
     def save_map(self):
         map_file = self.get_parameter('map_file').get_parameter_value().string_value
@@ -31,21 +30,22 @@ class MapProvider(Node):
 
     def get_area(self, request, response):
         #read requested area definition
-        map_area = self.map['area'][request.index]
+        map_area = self.map['mow_areas'][request.index]
 
         # extract outer polygon
+        # error if not exists
         outer_poly = Polygon()
         for point in map_area['outer_polygon']:
             outer_poly.points.append(Point32(x=point['x'], y=point['y']))            
             
         # extract keepout zones
+        # may not exist, check first
         keepout_zones = [] 
-        for zones in map_area['keepout_zones']:
-            for zone in zones['zone']:
-                keepout_poly = Polygon()
-                for point in zone['polygon']:
-                    keepout_poly.points.append(Point32(x=point['x']), y=point['y'])
-                keepout_zones.append(keepout_poly)  
+        for zone in map_area['keepout_zones']:
+            keepout_poly = Polygon()
+            for point in zone['polygon']:
+                keepout_poly.points.append(Point32(x=point['x'], y=point['y']))
+            keepout_zones.append(keepout_poly)   
         
         # build response
         area = MapArea()
@@ -55,7 +55,10 @@ class MapProvider(Node):
         return response    
     
     def get_num_of_areas(self, request, response):
-        response.count = sum([len(x["users"]) for x in self.map["area"]])
+        response.count = 0
+        for area in self.map["mow_areas"]:
+            response.count += 1
+
         return response
 
 def main(args=None):

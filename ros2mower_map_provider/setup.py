@@ -1,6 +1,8 @@
+import os
+from glob import glob
 from setuptools import find_packages, setup
 
-package_name = 'map_provider'
+package_name = 'ros2mower_map_provider'
 
 setup(
     name=package_name,
@@ -10,16 +12,18 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'example'), glob(os.path.join('example', '*.[yma]*'))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ros',
-    maintainer_email='paddy-daun@web.de',
-    description='TODO: Package description',
+    maintainer='Patrick Weber',
+    maintainer_email='info@weberpatrick.de',
+    description='ROS2Mower Map Server, provides Mow areas and their keepout zines',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'map_provider = ros2mower_map_provider.provider:main'
         ],
     },
 )

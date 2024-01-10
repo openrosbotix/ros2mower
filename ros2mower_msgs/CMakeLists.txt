@@ -12,19 +12,19 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-   "msg/Perimeter.msg"
-   "msg/MowMotor.msg"
-   "msg/Switches.msg"
-   "srv/SetMowMotor.srv"
-   "srv/Calibration.srv"
-   "srv/SetSwitch.srv"
-   "srv/PressSwitch.srv"
- )
+   "msg/MapArea.msg"
+   "srv/GetArea.srv"
+   "srv/GetNumOfAreas.srv"
+   DEPENDENCIES geometry_msgs builtin_interfaces
+    LIBRARY_NAME ${PROJECT_NAME})
+
+ 
 
 
 include_directories(include)
 ament_export_include_directories(include)
-ament_export_dependencies(std_msgs)
+ament_export_dependencies(geometry_msgs)
 ament_package()
