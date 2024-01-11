@@ -1,33 +1,26 @@
-import rclpy
-
-from rclpy.node import Node
-from ros2mower_msgs.srv import GetArea, GetNumOfAreas
 from ros2mower_msgs.msg import MapArea
 from geometry_msgs.msg import Polygon, Point32
 import yaml
+from ros2mower_map_provider.mapPlugins.plugin_base import MapProviderBase
 
-class MapProvider:
-    def __init__(self):
-        
+class ros2mower_MapProvider(MapProviderBase):
+    def __init__(self, map_file):
+        self.map_file=map_file
         self.load_map()
-
-        self.get_area()
         
     
     def load_map(self):
-        self.map_file="ros2mower/ros2mower_map_provider/example/mow_area.yaml"
         #open map file and store it to local map object
         with open(self.map_file, 'r') as f:
             self.map = yaml.safe_load(f)
 
-    def save_map(self):
-        map_file = self.get_parameter('map_file').get_parameter_value().string_value
-        with open(map_file, 'w') as file:
+    def save_map(self): 
+        with open(self.map_file, 'w') as file:
             yaml.dump(self.map, file)
 
-    def get_area(self):
+    def get_area(self, area_index):
         #read requested area definition
-        map_area = self.map['mow_areas'][1]
+        map_area = self.map['mow_areas'][area_index]
         
         # extract outer polygon
         outer_poly = Polygon()
@@ -38,7 +31,6 @@ class MapProvider:
         keepout_zones = [] 
         for zone in map_area['keepout_zones']:
             keepout_poly = Polygon()
-            print(zone)
             for point in zone['polygon']:
                 keepout_poly.points.append(Point32(x=point['x'], y=point['y']))
             keepout_zones.append(keepout_poly)  
@@ -47,17 +39,18 @@ class MapProvider:
         area = MapArea()
         area.outer_polygon = outer_poly
         area.keepout_zones =keepout_zones
+        return area
         
     
-    def get_num_of_areas(self, request, response):
-        response.count = 0
+    def get_num_of_areas(self):
+        response = 0
         for area in self.map["mow_areas"]:
-            response.count += 1
+            response += 1
 
         return response
 
 def main(args=None):
-    map_prodiver = MapProvider()
-
+    map_prodiver = ros2mower_MapProvider("ros2mower/ros2mower_map_provider/example/mow_area.yaml")
+    print(map_prodiver.get_num_of_areas())
 if __name__ == '__main__':
     main()    

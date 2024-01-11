@@ -23,7 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'map_provider = ros2mower_map_provider.provider:main'
+            'map_provider = ros2mower_map_provider.provider_node:main'
         ],
     },
 )
