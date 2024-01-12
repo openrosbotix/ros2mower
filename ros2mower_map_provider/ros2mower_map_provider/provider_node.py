@@ -7,26 +7,43 @@ from ros2mower_msgs.srv import GetArea, GetNumOfAreas
 from ros2mower_msgs.msg import MapArea
 from geometry_msgs.msg import Polygon, Point32
 from ros2mower_map_provider.mapPlugins import provider
+from rcl_interfaces.msg import ParameterDescriptor
 
 class MapProviderNode(Node):
     def __init__(self):
         super().__init__('map_provider')
-        self.declare_parameter('map_file', 'example/mow_area.yaml' )
-        self.map_file = self.get_parameter('map_file').get_parameter_value().string_value
+        map_file_parameter_descriptor = ParameterDescriptor(description='Path and filename of map')
+        self.declare_parameter('map_file', 'example/mow_area.yaml', map_file_parameter_descriptor )
+
+        provider_plugin_parameter_descriptor = ParameterDescriptor(description='name of plugin which provides info of map')
+        self.declare_parameter('provider_plugin', 'ros2mowerMapProvider', provider_plugin_parameter_descriptor )
+
+        self.map_file = self.get_parameter('map_file').get_parameter_value().string_value      
         self.map_file = "ros2mower/ros2mower_map_provider/example/mow_area.yaml"
-        self.map_provider = provider.MapProvider("ros2mowerMapProvider", self.map_file)
+
+        self.map_provider_plugin = self.get_parameter('provider_plugin').get_parameter_value().string_value        
+        self.map_provider = provider.MapProvider(self.map_provider_plugin, self.map_file)
         
         self.map_provider.load_map()
         self.srv = self.create_service(GetArea, 'get_area', self.get_area)
+        self.srv = self.create_service(GetArea, 'get_all_keepout_zones', self.get_all_keepout_zones)        
         self.srv = self.create_service(GetNumOfAreas, 'get_num_of_areas', self.get_num_of_areas)
 
     def get_area(self, request, response):
-
-        response.area = self.map_provider.get_area(request.index)
+        if request.name.data == '':
+            response.area = self.map_provider.get_area(request.index)
+        else:
+            response.area = self.map_provider.get_area_by_name(request.name.data)
         return response    
     
     def get_num_of_areas(self, request, response):
         response.count = self.map_provider.get_num_of_areas()
+        if response.count == -1:
+            self.get_logger().warn('No map data available')
+        return response
+    
+    def get_all_keepout_zones(self, request, response):
+        response.area = self.map_provider.get_all_keepout_zones()
         return response
 
 def main(args=None):

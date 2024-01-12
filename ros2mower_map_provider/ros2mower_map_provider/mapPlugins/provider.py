@@ -51,14 +51,21 @@ class MapProvider:
     def get_area(self, area_index):
         return self.map_plugin.get_area(area_index)
         
+    def get_area_by_name(self, name):
+        return self.map_plugin.get_area_by_name(name)
     
     def get_num_of_areas(self):
         num_areas = 0
         num_areas = self.map_plugin.get_num_of_areas()
         return num_areas
+    
+    def get_all_keepout_zones(self):
+        return self.map_plugin.get_all_keepout_zones()
 
 def main(args=None):
-    map_prodiver = MapProvider("ros2mowerMapProvider", "ros2mower/ros2mower_map_provider/example/mow_area.yaml" )
+    map_prodiver = MapProvider("templateMapProvider", "ros2mower/ros2mower_map_provider/example/mow_area.yaml" )
+    print(map_prodiver.get_area(0))
+    print(map_prodiver.get_all_keepout_zones())
 
 if __name__ == '__main__':
     main()    

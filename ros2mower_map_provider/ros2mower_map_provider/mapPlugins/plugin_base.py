@@ -24,3 +24,11 @@ class MapProviderBase(ABC):
     @abstractmethod
     def get_num_of_areas(self): 
         pass    
+
+    @abstractmethod
+    def get_area_by_name(self, name):
+        pass
+
+    @abstractmethod
+    def get_all_keepout_zones(self):
+        pass
