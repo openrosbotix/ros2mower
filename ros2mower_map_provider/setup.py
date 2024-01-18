@@ -13,6 +13,8 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'example'), glob(os.path.join('example', '*.[yma]*'))),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'plugins'), glob('ros2mower_map_provider/mapPlugins/*.py'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,

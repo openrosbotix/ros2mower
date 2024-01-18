@@ -1,5 +1,5 @@
 # retrieves the number of defined mow areas in map file
-# it returns -1 if no map is available
+# it returns 0 if no map is available
 
 ---
 uint32 count

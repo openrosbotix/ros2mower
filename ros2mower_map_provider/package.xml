@@ -11,6 +11,7 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
+  <test_depend>ros_testing</test_depend>
 
   <build_depend>geometry_msgs</build_depend>
   <build_depend>ros2mower_msgs</build_depend>

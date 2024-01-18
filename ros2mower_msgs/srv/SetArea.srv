@@ -1,0 +1,6 @@
+# service to change an existing area as well as adding a new area to
+# mow areas map. ID of area acts as key. If ID is empty or not found, area gets added as new area
+
+MapArea area #new/changed area definition
+---
+uint32 id #id of new or changed area
