@@ -3,4 +3,4 @@
 
 MapArea area #new/changed area definition
 ---
-uint32 id #id of new or changed area
+uint32 count #new count of areas

@@ -1,6 +1,5 @@
 mow_areas:
-  - id : 0
-    name : Greenhouse
+  - name : Greenhouse
     outer_polygon:
       - x: 1.7990168333053589
         y: -0.81356799602508545
@@ -12,8 +11,7 @@ mow_areas:
         y: -2.1427783966064453
       - x: -3.0136401653289795
         y: -0.10312867909669876
-  - id : 1
-    name : Fishpond
+  - name : Fishpond
     outer_polygon:
       - x: 1.7990168333053589
         y: -0.81356799602508545
@@ -26,14 +24,12 @@ mow_areas:
       - x: -3.0136401653289795
         y: -0.10312867909669876
     keepout_zones:
-      - zone: 1
-        polygon:
+      - polygon:
         - x: 1.7990168333053589
           y: -0.81356799602508545
         - x: 2.1656956672668457
           y: 2.6469614505767822
-      - zone: 2
-        polygon:
+      - polygon:
         - x: 0.25
           y: 0.25
         - x: 0.25

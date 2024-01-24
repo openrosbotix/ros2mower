@@ -18,10 +18,6 @@ class MapProviderBase(ABC):
         pass
 
     @abstractmethod
-    def get_area(self, area_index):
-        pass
-
-    @abstractmethod
     def get_num_of_areas(self):
         pass
 

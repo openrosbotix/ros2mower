@@ -32,7 +32,6 @@ class ros2mower_MapProvider(MapProviderBase):
         if self.map is not None and len(self.map['mow_areas']) > area_index:
             # read requested area definition
             map_area = self.map['mow_areas'][area_index]
-            area.id = map_area['id']
             area.name.data = map_area['name']
             # extract outer polygon
             outer_poly = Polygon()
@@ -98,35 +97,24 @@ class ros2mower_MapProvider(MapProviderBase):
     def set_area(self, area):
         # check if area id already in use
         index = -1
+        found = False
         yaml_area = self.convert_2_yaml(area)
-        if self.map is not None: # and area['id'] != None :
-
+        if self.map is not None:
             for existing_area in self.map['mow_areas']:
                 index += 1
-                if existing_area['id'] == area.id:
+                if existing_area['name'] == area.name.data:
                     # name found
+                    found = True
                     break
 
-        if index != -1:
+        if index != -1 and found == True:
             # override an existing area
             self.map['mow_areas'][index] = yaml_area
         else:
             # add a new area
-            if area.id is None:
-                index = self.get_new_id()
-                yaml_area['id'] = index
-                self.map['mow_areas'].append(yaml_area)
+            self.map['mow_areas'].append(yaml_area)
 
-        return index
-
-    def get_new_id(self):
-        # determine max value of used id's
-        index = -1
-        if self.map is not None:
-            for area in self.map['mow_areas']:
-                if area['id'] > index:
-                    index = area['id']
-        return index + 1
+        return self.get_num_of_areas()
 
     def convert_2_yaml(self, area):
         # collect outer poly
@@ -139,15 +127,13 @@ class ros2mower_MapProvider(MapProviderBase):
         keepout_zones = []
         for zones in area.keepout_zones:
             yaml_points = []
-            for point in zones.polygon.points:
+            for point in zones.points:
                 yaml_point = {'x': point.x,
                               'y': point.y}
                 yaml_points.append(yaml_point)
-            yaml_zone = {'zone': zones.zone,
-                         'polygon': yaml_points}
+            yaml_zone = {'polygon': yaml_points}
             keepout_zones.append(yaml_zone)
-        yaml_area = {'id': area.id,
-                     'name': area.name.data,
+        yaml_area = {'name': area.name.data,
                      'outer_polygon': outer_polygon,
                      'keepout_zones': keepout_zones}
         return yaml_area
@@ -156,9 +142,8 @@ class ros2mower_MapProvider(MapProviderBase):
 def main(args=None):
     map_prodiver = ros2mower_MapProvider("ros2mower/ros2mower_map_provider/example/mow_area.yaml")
     # print(map_prodiver.get_num_of_areas())
-    # print(map_prodiver.get_area_by_name('Greenhouse'))
+    print(map_prodiver.get_area_by_name(''))
     print(map_prodiver.get_all_keepout_zones())
-
 
 if __name__ == '__main__':
     main()

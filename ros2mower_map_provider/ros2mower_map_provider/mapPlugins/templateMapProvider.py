@@ -39,7 +39,6 @@ class ros2mower_MapProvider(MapProviderBase):
         area = MapArea()
         area.outer_polygon = outer_poly
         area.keepout_zones = keepout_zones
-        area.id = 5
         area.name.data = "Test"
         return area
 

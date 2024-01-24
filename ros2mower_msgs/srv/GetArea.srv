@@ -1,7 +1,6 @@
 # provide either the index or the name of the area you interrested in
 # if area can't be found, an empty area will be returned
 
-uint32 index            # array index of area
 std_msgs/String name    # name of area
 ---
 MapArea area
