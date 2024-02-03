@@ -42,8 +42,10 @@ class ros2mower_MapProvider(MapProviderBase):
         area.name.data = "Test"
         return area
 
-    def get_num_of_areas(self):
-        return 1
+    def get_area_list(self):
+        names = []
+        names.append("Hello Mow")
+        return names
 
     def get_area_by_name(self, name):
         return self.get_area(1)
@@ -57,7 +59,7 @@ class ros2mower_MapProvider(MapProviderBase):
 
 def main(args=None):
     map_prodiver = ros2mower_MapProvider("filename.yaml")
-    print(map_prodiver.get_num_of_areas())
+    print(map_prodiver.get_area_list())
 
 
 if __name__ == '__main__':

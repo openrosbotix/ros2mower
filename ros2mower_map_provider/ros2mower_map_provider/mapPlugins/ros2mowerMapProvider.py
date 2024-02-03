@@ -69,14 +69,11 @@ class ros2mower_MapProvider(MapProviderBase):
         area = MapArea()
         return area
 
-    def get_num_of_areas(self):
-        if self.map is None:
-            return 0
-        response = 0
+    def get_area_list(self):
+        names =[] 
         for area in self.map["mow_areas"]:
-            response += 1
-
-        return response
+            names.append(area['name'])
+        return names
 
     def get_all_keepout_zones(self):
         keepout_zones = []
@@ -114,7 +111,7 @@ class ros2mower_MapProvider(MapProviderBase):
             # add a new area
             self.map['mow_areas'].append(yaml_area)
 
-        return self.get_num_of_areas()
+        return len(self.get_area_list())
 
     def convert_2_yaml(self, area):
         # collect outer poly
@@ -141,7 +138,7 @@ class ros2mower_MapProvider(MapProviderBase):
 
 def main(args=None):
     map_prodiver = ros2mower_MapProvider("ros2mower/ros2mower_map_provider/example/mow_area.yaml")
-    # print(map_prodiver.get_num_of_areas())
+    print(map_prodiver.get_area_list())
     print(map_prodiver.get_area_by_name(''))
     print(map_prodiver.get_all_keepout_zones())
 

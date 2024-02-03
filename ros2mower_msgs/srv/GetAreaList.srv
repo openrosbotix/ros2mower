@@ -1,0 +1,6 @@
+# retrieves the number and names of defined mow areas in map file
+# it returns 0 if no map is available
+
+---
+uint32 count
+std_msgs/String[] area_names 

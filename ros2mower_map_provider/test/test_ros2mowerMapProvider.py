@@ -8,7 +8,7 @@ import pytest
 import unittest
 import rclpy
 
-from ros2mower_msgs.srv import GetNumOfAreas, GetArea, SetArea
+from ros2mower_msgs.srv import GetAreaList, GetArea, SetArea
 from ros2mower_msgs.msg import MapArea
 from geometry_msgs.msg import Polygon, Point32
 
@@ -39,24 +39,25 @@ class TestCases(unittest.TestCase):
     def setUpClass(self):
         rclpy.init()
         self.node = rclpy.create_node('test_node')
-        self.client_getAreaByName = self.node.create_client(GetArea, 'get_area')
-        self.client_num_areas = self.node.create_client(GetNumOfAreas, 'get_num_of_areas')
-        self.client_SetArea = self.node.create_client(SetArea, 'set_area')
-        self.client_allKeepouts = self.node.create_client(GetArea, 'get_all_keepout_zones')
+        self.client_getAreaByName = self.node.create_client(GetArea, 'map_provider/get_area')
+        self.client_area_list = self.node.create_client(GetAreaList, 'map_provider/get_area_list')
+        self.client_SetArea = self.node.create_client(SetArea, 'map_provider/set_area')
+        self.client_allKeepouts = self.node.create_client(GetArea, 'map_provider/get_all_keepout_zones')
 
     @classmethod 
     def tearDownClass(self):
         self.node.destroy_node()
         rclpy.shutdown()
 
-    def test_1_num_of_areas(self):
-        while not self.client_num_areas.wait_for_service(timeout_sec=5.0):
+    def test_1_area_list(self):
+        while not self.client_area_list.wait_for_service(timeout_sec=5.0):
             assert 0 == 1, 'serivce not ready'
-        request = GetNumOfAreas.Request()
-        self.future = self.client_num_areas.call_async(request)
+        request = GetAreaList.Request()
+        self.future = self.client_area_list.call_async(request)
         rclpy.spin_until_future_complete(self.node, self.future)
 
         assert self.future.result().count == 2, 'Num of counts invalid, expect 2 got: ' + str(self.future.result().count)
+        assert len(self.future.result().area_names) == 2, 'Array with area names invalid'
 
     # def test_2_GetArea_byID(self):
     #     # register and call service client

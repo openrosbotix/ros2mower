@@ -21,7 +21,7 @@ This plugin can be used as a draft for your own plugin.
 ## Launch
 run map_provider.launch.py file to start map provider node by running this command
 ```
-ros2 run launch ros2mower_map_provider map_provider.launch.py
+ros2 launch ros2mower_map_provider map_provider.launch.py
 ```
 ## Services
 These services are available
@@ -30,10 +30,10 @@ Get data of a single mow area by it's name
 ```
 /map_provider/get_area
 ```
-### Get num of areas
-Get total number of mow areas
+### Get area list
+Get total number of mow areas as well as their names
 ```
-/map_provider/get_num_of_areas
+/map_provider/get_area_list
 ```
 
 ### Get all keepout zones

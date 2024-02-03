@@ -17,7 +17,7 @@ find_package(geometry_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
    "msg/MapArea.msg"
    "srv/GetArea.srv"
-   "srv/GetNumOfAreas.srv"
+   "srv/GetAreaList.srv"
    "srv/SetArea.srv"
    "srv/SaveMap.srv"
    DEPENDENCIES geometry_msgs builtin_interfaces

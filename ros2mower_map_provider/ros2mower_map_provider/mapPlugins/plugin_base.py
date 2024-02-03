@@ -18,7 +18,7 @@ class MapProviderBase(ABC):
         pass
 
     @abstractmethod
-    def get_num_of_areas(self):
+    def get_area_list(self):
         pass
 
     @abstractmethod
