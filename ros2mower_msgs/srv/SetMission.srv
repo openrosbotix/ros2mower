@@ -1,0 +1,5 @@
+# set mission of robot
+
+Mission new_mission
+---
+Mission actual_mission

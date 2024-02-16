@@ -1,0 +1,39 @@
+<root BTCPP_format="4">
+    <!-- Behavior tree that looks for objects by naively looking through locations. -->
+    <BehaviorTree ID="MainTree">
+        <Sequence name="main_loop">
+            <Fallback>
+                <CheckBattery/>
+                <Idle/>
+            </Fallback>
+            <Fallback>
+                <CheckMission name="CheckAreaRecording" mission="area_recording" />
+                <AreaRecording/>
+            </Fallback>
+            <Fallback>
+                <CheckMission name="CheckMow" mission="Mow" />
+                <Sequence name="MowArea">
+                    <GetMowArea name="GetMowArea" area="{area_name}" />
+                    <MowArea name="{area_name}"/>
+                </Sequence>
+            </Fallback>
+            <Idle/>
+        </Sequence>
+    </BehaviorTree>
+
+    <!-- Description of Node Models (used by Groot2) -->
+    <TreeNodesModel>
+        <Action ID="GetMowArea">
+            <output_port area="area_name"/>
+        </Action>
+        <Action ID="MowArea">
+            <input_port name="area"/>
+        </Action>
+        <Action ID="CheckBattery"/>
+        <Action ID="Idle"/>
+        <Action ID="CheckMission">
+            <input_port name="mission"/>
+        </Action>
+        <Action ID="AreaRecording"/>
+    </TreeNodesModel>
+</root>

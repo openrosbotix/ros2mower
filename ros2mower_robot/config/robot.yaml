@@ -1,0 +1,5 @@
+ROS2Mower_Robot:
+  ros__parameters:
+    battery_low: 37.5   # go to station if below this value
+    batery_critital: 36.5 # error state, if below this level
+

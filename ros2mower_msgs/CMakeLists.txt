@@ -13,14 +13,17 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
    "msg/MapArea.msg"
+   "msg/Mission.msg"
    "srv/GetArea.srv"
    "srv/GetAreaList.srv"
    "srv/SetArea.srv"
    "srv/SaveMap.srv"
-   DEPENDENCIES geometry_msgs builtin_interfaces
+   "srv/SetMission.srv"
+   DEPENDENCIES geometry_msgs std_msgs builtin_interfaces
     LIBRARY_NAME ${PROJECT_NAME})
 
  
@@ -28,5 +31,5 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 include_directories(include)
 ament_export_include_directories(include)
-ament_export_dependencies(geometry_msgs)
+ament_export_dependencies(geometry_msgs std_msgs)
 ament_package()
