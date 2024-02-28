@@ -69,6 +69,9 @@ private:
     /// @brief battery voltage taken as critical if below this value
     float _battery_voltage_critical;
 
+    /// @brief file name of BT XML definition
+    std::string tree_xml_file_;
+
     /// @brief Timer for publishing status messages like actual mission
     rclcpp::TimerBase::SharedPtr _timer_publisher;
 

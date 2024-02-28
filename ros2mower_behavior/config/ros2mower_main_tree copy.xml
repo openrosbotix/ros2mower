@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4" main_tree_to_execute="ros2mower_main_tree">
+  <BehaviorTree ID="ros2mower_main_tree">
+    <ReactiveSequence>
+      <ReactiveFallback name="ReactiveFallback_CheckBattery">
+        <ReactiveFallback _description="check battery voltage . If low, change mission to docking">
+          <CheckBatteryVoltage name="CheckBatteryVoltage_low" expectedValue="37.0" topic_name="battery" _description="check if battery voltage is low"/>
+          <SetMission name="SetMission_docking" service_name="ros2mower/set_mission" newMissionID="30"/>
+        </ReactiveFallback>
+        <ReactiveFallback _description="Check battery voltage. If too low, change to error state">
+          <CheckBatteryVoltage name="CheckBattery_critical" expectedValue="36.0" topic_name="battery" _description="Check if battery voltage is too low"/>
+          <SetMission name="SetMission_Error" service_name="ros2mower/set_mission" newMissionID="99"/>
+        </ReactiveFallback>
+      </ReactiveFallback>
+      <ReactiveFallback name="ReactiveFallback_Missions" _description="Run missions">
+        <ReactiveSequence name="ReactiveSequence_Mow" _description="Mow areas">
+          <CheckMission name="CheckMission_Mow" expectedMissionID="20" topic_name="ros2mower/mission" _description="check is actual mission is MOW"/>
+          <ReactiveFallback name="ReactiveFallback_GetNextMowOrDocking" _description="Reads next mow area, if none found, go to station">
+            <!--<GetMowArea/>-->
+            <SetMission service_name="ros2mower/set_mission" newMissionID="30"/>
+          </ReactiveFallback>
+          <!--<MowArea/>-->
+        </ReactiveSequence>
+        <ReactiveSequence name="ReactiveSequence_singleMow" _description="mow a single area">
+          <CheckMission expectedMissionID="21" topic_name="ros2mower/mission" />
+          <!-- <MowArea/>-->
+        </ReactiveSequence>
+      </ReactiveFallback>
+    </ReactiveSequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Condition ID="CheckBatteryVoltage" editable="true">
+      <input_port name="expectedValue"/>
+      <input_port name="topic_name" />
+    </Condition>
+    <Condition ID="CheckMission" editable="true">
+      <input_port name="expectedMissionID"/>
+      <input_port name="topic_name" />
+    </Condition>
+    <Action ID="GetMowArea" editable="true"/>
+    <Action ID="MowArea" editable="true"/>
+    <Action ID="SetMission" editable="true">
+      <input_port name="newMissionID"/>
+      <input_port name="service_name"/>
+    </Action>
+  </TreeNodesModel>
+
+</root>

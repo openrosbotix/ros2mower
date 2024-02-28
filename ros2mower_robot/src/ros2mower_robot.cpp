@@ -29,10 +29,6 @@ ROS2Mower_Robot::~ROS2Mower_Robot() {}
 
 void ROS2Mower_Robot::declare_node_parameters()
 {
-  // declare parameter
-  this->declare_parameter("battery_low", 37.5);
-  this->declare_parameter("battery_critical", 36.5);
-
   // register parameter change callback handle
   this->_callbackParameter = this->add_on_set_parameters_callback(
       std::bind(&ROS2Mower_Robot::parametersCallback, this, std::placeholders::_1));
@@ -47,14 +43,14 @@ rcl_interfaces::msg::SetParametersResult ROS2Mower_Robot::parametersCallback(
   // Here update class attributes, do some actions, etc.
   for (const auto &param : parameters)
   { // TODO: format reconfigure nicely
-    if (param.get_name() == "battery_low")
-    {
-      this->_battery_voltage_low = param.as_double();
-    }
-    if (param.get_name() == "battery_critical")
-    {
-      this->_battery_voltage_critical = param.as_double();
-    }
+    // if (param.get_name() == "battery_low")
+    // {
+    //   this->_battery_voltage_low = param.as_double();
+    // }
+    // if (param.get_name() == "battery_critical")
+    // {
+    //   this->_battery_voltage_critical = param.as_double();
+    // }
   }
   return result;
 }
@@ -63,25 +59,25 @@ rcl_interfaces::msg::SetParametersResult ROS2Mower_Robot::parametersCallback(
 void ROS2Mower_Robot::callbackBattery(const std::shared_ptr<sensor_msgs::msg::BatteryState> msg)
 {
   this->_actual_battery_voltage = msg->voltage;
-  if (this->_actual_battery_voltage < this->_battery_voltage_low)
-  {
-    this->battery_low = true;
-    this->set_mission_internal(ROS2Mower_Robot::missions::docking);
-  }
-  else
-  {
-    this->battery_low = false;
-  }
+  // if (this->_actual_battery_voltage < this->_battery_voltage_low)
+  // {
+  //   this->battery_low = true;
+  //   this->set_mission_internal(ROS2Mower_Robot::missions::docking);
+  // }
+  // else
+  // {
+  //   this->battery_low = false;
+  // }
 
-  if (this->_actual_battery_voltage < this->_battery_voltage_critical)
-  {
-    this->battery_critical = true;
-    this->set_mission_internal(ROS2Mower_Robot::missions::error);
-  }
-  else
-  {
-    this->battery_critical = false;
-  }
+  // if (this->_actual_battery_voltage < this->_battery_voltage_critical)
+  // {
+  //   this->battery_critical = true;
+  //   this->set_mission_internal(ROS2Mower_Robot::missions::error);
+  // }
+  // else
+  // {
+  //   this->battery_critical = false;
+  // }
 
   if (msg->current > 0.1)
   {
@@ -111,30 +107,34 @@ void ROS2Mower_Robot::set_mission(const std::shared_ptr<ros2mower_msgs::srv::Set
                                   std::shared_ptr<ros2mower_msgs::srv::SetMission::Response> response)
 {
 
-  // check if mission value is valid
-  if (request->new_mission.mission == ROS2Mower_Robot::missions::idle ||
-      request->new_mission.mission == ROS2Mower_Robot::missions::area_recording ||
-      request->new_mission.mission == ROS2Mower_Robot::missions::mow ||
-      request->new_mission.mission == ROS2Mower_Robot::missions::single_mow ||
-      request->new_mission.mission == ROS2Mower_Robot::missions::docking ||
-      request->new_mission.mission == ROS2Mower_Robot::missions::station ||
-      request->new_mission.mission == ROS2Mower_Robot::missions::error)
+  if (request->new_mission.mission != this->_actual_mission.mission)
   {
-    if (request->new_mission.mission == ROS2Mower_Robot::missions::single_mow &&
-        request->new_mission.mission_data.data.empty())
+
+    // check if mission value is valid
+    if (request->new_mission.mission == ROS2Mower_Robot::missions::idle ||
+        request->new_mission.mission == ROS2Mower_Robot::missions::area_recording ||
+        request->new_mission.mission == ROS2Mower_Robot::missions::mow ||
+        request->new_mission.mission == ROS2Mower_Robot::missions::single_mow ||
+        request->new_mission.mission == ROS2Mower_Robot::missions::docking ||
+        request->new_mission.mission == ROS2Mower_Robot::missions::station ||
+        request->new_mission.mission == ROS2Mower_Robot::missions::error)
     {
-      RCLCPP_ERROR(this->get_logger(), "ROS2Mower: invalid mission data, keep old mission");
+      if (request->new_mission.mission == ROS2Mower_Robot::missions::single_mow &&
+          request->new_mission.mission_data.data.empty())
+      {
+        RCLCPP_ERROR(this->get_logger(), "ROS2Mower: invalid mission data, keep old mission");
+      }
+      else
+      {
+        this->_last_mission = this->_actual_mission;
+        this->_actual_mission = request->new_mission;
+        RCLCPP_INFO(this->get_logger(), "ROS2Mower: change mission to" + this->_actual_mission.mission);
+      }
     }
     else
     {
-      this->_last_mission = this->_actual_mission;
-      this->_actual_mission = request->new_mission;
-      RCLCPP_INFO(this->get_logger(), "ROS2Mower: change mission");
+      RCLCPP_ERROR(this->get_logger(), "ROS2Mower: invalid mission, keep old mission");
     }
-  }
-  else
-  {
-    RCLCPP_ERROR(this->get_logger(), "ROS2Mower: invalid mission, keep old mission");
   }
 
   response->actual_mission = this->_actual_mission;

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4" project_name="ros2mower">
+    <include path="ros2mower_main_tree.xml"/>
+    <!-- Description of Node Models (used by Groot) -->
+    <TreeNodesModel>
+        <Condition ID="CheckBatteryVoltage" editable="true">
+            <input_port name="expectedValue"/>
+        </Condition>
+        <Condition ID="CheckBoolValue" editable="true">
+            <input_port name="expectedValue"/>
+        </Condition>
+        <Condition ID="CheckMission" editable="true">
+            <input_port name="expectedMissionID"/>
+        </Condition>
+        <Action ID="GetMowArea" editable="true"/>
+        <Action ID="MowArea" editable="true"/>
+        <Action ID="SetMission" editable="true">
+            <input_port name="newMissionID"/>
+        </Action>
+    </TreeNodesModel>
+</root>
