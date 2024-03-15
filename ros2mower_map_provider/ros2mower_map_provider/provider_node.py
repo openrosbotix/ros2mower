@@ -3,6 +3,7 @@
 import rclpy
 
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 from ros2mower_msgs.srv import GetArea, GetAreaList, SetArea, SaveMap
 from ros2mower_msgs.msg import MapArea
 from ros2mower_map_provider.mapPlugins import provider
@@ -117,8 +118,9 @@ class MapProviderNode(Node):
         # costmap_image.show()
         
         # create publishers
-        self.costmap_pub = self.create_publisher(OccupancyGrid, "/ros2mower/costmap_keepout", 3)
-        self.costmap_info_pub = self.create_publisher(CostmapFilterInfo, "/ros2mower/costmap_keepout/info", 3)
+        latchung_qos = QoSProfile(depth = 1, durability = QoSDurabilityPolicy.TRANSIENT_LOCAL )
+        self.costmap_pub = self.create_publisher(OccupancyGrid, "/ros2mower/costmap_keepout", qos_profile=latchung_qos)
+        self.costmap_info_pub = self.create_publisher(CostmapFilterInfo, "/ros2mower/costmap_keepout/info", qos_profile=latchung_qos)
         
         # create costmap info
         costmap_header = Header()
