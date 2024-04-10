@@ -3,7 +3,9 @@
 #include "behaviors/CheckBatteryVoltage.hpp"
 #include "behaviors/CheckMission.hpp"
 #include "behaviors/SetMission.hpp"
-#include "behaviors/GetMowArea.hpp"
+#include "behaviors/GetNextMowArea.hpp"
+#include "behaviors/GetMowAreaData.hpp"
+#include "behaviors/GetCoveragePath.hpp"
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
@@ -24,7 +26,9 @@ int main(int argc, char **argv)
   factory.registerNodeType<CheckBatteryVoltage>("CheckBatteryVoltage", params);
   factory.registerNodeType<CheckMission>("CheckMission", params);
   factory.registerNodeType<SetMission>("SetMission", params);
-  factory.registerNodeType<GetMowArea>("GetMowArea", params);
+  factory.registerNodeType<GetNextMowArea>("GetNextMowArea", params);
+  factory.registerNodeType<GetMowAreaData>("GetMowAreaData", params);
+  factory.registerNodeType<GetCoveragePath>("GetCoveragePath", params);
 
   auto tree = factory.createTreeFromFile(tree_xml);
   BT::Groot2Publisher publisher(tree);

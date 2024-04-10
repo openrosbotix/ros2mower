@@ -10,6 +10,7 @@
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include "ros2mower_msgs/msg/mission.hpp"
 #include "ros2mower_msgs/srv/set_mission.hpp"
+#include "ros2mower_msgs/action/mow_paths.hpp"
 
 class ROS2Mower_Robot : public rclcpp::Node
 {

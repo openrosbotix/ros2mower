@@ -14,6 +14,8 @@ find_package(rclpy REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(slic3r_coverage_planner REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
    "msg/MapArea.msg"
@@ -23,7 +25,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
    "srv/SetArea.srv"
    "srv/SaveMap.srv"
    "srv/SetMission.srv"
-   DEPENDENCIES geometry_msgs std_msgs builtin_interfaces
+   "action/MowPaths.action"
+   DEPENDENCIES geometry_msgs std_msgs slic3r_coverage_planner builtin_interfaces
     LIBRARY_NAME ${PROJECT_NAME})
 
  
@@ -31,5 +34,5 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 include_directories(include)
 ament_export_include_directories(include)
-ament_export_dependencies(geometry_msgs std_msgs)
+ament_export_dependencies(geometry_msgs std_msgs slic3r_coverage_planner)
 ament_package()

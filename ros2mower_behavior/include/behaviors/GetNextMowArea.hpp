@@ -1,5 +1,5 @@
-#ifndef _GET_MOW_AREA_HPP
-#define _GET_MOW_AREA_HPP
+#ifndef _GET_NEXT_MOW_AREA_HPP
+#define _GET_NEXT_MOW_AREA_HPP
 
 #include <behaviortree_ros2/bt_service_node.hpp>
 #include "std_msgs/msg/string.hpp"
@@ -7,12 +7,12 @@
 
 using namespace BT;
 
-class GetMowArea : public RosServiceNode<ros2mower_msgs::srv::GetAreaList>
+class GetNextMowArea : public RosServiceNode<ros2mower_msgs::srv::GetAreaList>
 {
 public:
-  GetMowArea(const std::string &name,
-             const NodeConfig &conf,
-             const RosNodeParams &params);
+  GetNextMowArea(const std::string &name,
+                 const NodeConfig &conf,
+                 const RosNodeParams &params);
 
   static BT::PortsList providedPorts()
   {

@@ -22,7 +22,6 @@ ROS2Mower_Robot::ROS2Mower_Robot(std::string name) : rclcpp::Node(name)
   this->_timer_publisher = this->create_wall_timer(
       100ms, std::bind(&ROS2Mower_Robot::timer_callback_publisher, this));
 
-  // register service clients for map provider
 }
 
 ROS2Mower_Robot::~ROS2Mower_Robot() {}
@@ -59,26 +58,7 @@ rcl_interfaces::msg::SetParametersResult ROS2Mower_Robot::parametersCallback(
 void ROS2Mower_Robot::callbackBattery(const std::shared_ptr<sensor_msgs::msg::BatteryState> msg)
 {
   this->_actual_battery_voltage = msg->voltage;
-  // if (this->_actual_battery_voltage < this->_battery_voltage_low)
-  // {
-  //   this->battery_low = true;
-  //   this->set_mission_internal(ROS2Mower_Robot::missions::docking);
-  // }
-  // else
-  // {
-  //   this->battery_low = false;
-  // }
-
-  // if (this->_actual_battery_voltage < this->_battery_voltage_critical)
-  // {
-  //   this->battery_critical = true;
-  //   this->set_mission_internal(ROS2Mower_Robot::missions::error);
-  // }
-  // else
-  // {
-  //   this->battery_critical = false;
-  // }
-
+ 
   if (msg->current > 0.1)
   {
     this->isCharging = true;

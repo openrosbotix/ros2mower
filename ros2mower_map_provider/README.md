@@ -54,6 +54,25 @@ this service is used to persist any changes. So to save your changes made by set
 /map_provider/save_map
 ```
 
+## Parameters
+### mapfile
+Path and file name of mow areas. This is not the map for nav2.
+
+### provider_plugin
+name of plugin to load. Default is ros2mowerMapProvider
+
+### costmap_keepout
+Publish all keppout zones as costmap. This build a costmap of all keepout zones. This costmap gets published as occupancy grid as well as CostmapFilterInfo.
+
+### costmap_width
+Width of costmap in m
+
+### costmap_height
+height of costmap in m
+
+### costmap_resolution
+resolution of costmap in m/cell
+
 # PyTest
 This package includes pytest class. To run tests, use this command
 ```

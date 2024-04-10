@@ -1,18 +1,18 @@
-#include "behaviors/GetMowArea.hpp"
+#include "behaviors/GetNextMowArea.hpp"
 
-GetMowArea::GetMowArea(const std::string &name,
+GetNextMowArea::GetNextMowArea(const std::string &name,
                        const NodeConfig &conf,
                        const RosNodeParams &params)
     : RosServiceNode<ros2mower_msgs::srv::GetAreaList>(name, conf, params)
 {
 }
 
-bool GetMowArea::setRequest(Request::SharedPtr &request)
+bool GetNextMowArea::setRequest(Request::SharedPtr &request)
 {
     return true;
 }
 
-NodeStatus GetMowArea::onResponseReceived(const Response::SharedPtr &response)
+NodeStatus GetNextMowArea::onResponseReceived(const Response::SharedPtr &response)
 {
     std::string actualMowArea;
     getInput("actualMowArea", actualMowArea);
@@ -47,6 +47,7 @@ NodeStatus GetMowArea::onResponseReceived(const Response::SharedPtr &response)
                     }
                 }
             }
+            return NodeStatus::FAILURE;
         }
     }
     else

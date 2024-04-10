@@ -1,0 +1,9 @@
+ROS2Mower_area_recording:
+  ros__parameters:
+    joy_toggle_polygon: 0 # toggle polygon recording on/off
+    joy_keepout: 1 # button to store last polygon as keepout zone
+    joy_area: 2 # button to store last polygon as outer polygon of area
+    joy_clear: 3 # clear last recorded poly
+    joy_clear_all: 4 # clear entire recorded map
+    joy_save: 5 # save map
+
