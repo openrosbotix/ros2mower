@@ -6,8 +6,9 @@ import os
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('ros2mower_map_provider')
-    map_file = pkg_share + '/example/mow_area.yaml'
     
+    map_file = pkg_share + '/example/mow_area.yaml'
+
     map_provider = Node(
         package='ros2mower_map_provider',
         executable='map_provider',
@@ -24,5 +25,6 @@ def generate_launch_description():
  
    
     return LaunchDescription([
-        map_provider,
+        
+        map_provider
    ])

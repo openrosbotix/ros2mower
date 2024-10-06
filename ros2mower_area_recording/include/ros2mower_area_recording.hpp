@@ -35,6 +35,7 @@ public:
     /* public attributes*/
 
 private:
+
     /// @brief  store recorded polygons here
     ros2mower_msgs::msg::MapArea _map_area;
 
@@ -61,6 +62,8 @@ private:
     int _joy_btn_clear_all;
     int _joy_btn_save;
     float _distance_points;
+    std::string _base_frame;
+    std::string _map_frame;
 
     /// @brief publish polygon ar marker array
     bool _doPublishPolygon;
@@ -77,6 +80,9 @@ private:
     /// @brief publishers to visualize polygon and mow area in rviz2
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr _pub_polygon;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr _pub_mow_area;
+
+    /// @brief subscriber for joystick messages
+    rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr _sub_joy;
 
     /// @brief Timer for publishing status messages like actual mission
     rclcpp::TimerBase::SharedPtr _timer_publisher;
@@ -105,6 +111,7 @@ private:
     /// @brief calculate distance between poses
     /// @return distance in meters
     float getDistanceToLastPose();
+
 };
 
 #endif

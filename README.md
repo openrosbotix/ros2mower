@@ -17,3 +17,14 @@ This gets handeled by package map_provider
 
 ## Mow
 After map creation and area recording, you can start mower by launch def.launch.py. At the beginning, mower will be in idle or station mode. Start the mower by call service abcxyz. The mower will start to mow the first mowing area. Therefore it first creates a path array and forward them to nav2 waypoint follower. After completion, the next mow area will be processed.
+
+## Launch simulation
+To launch ROS2Mower with a simulated HoverMower, you need to start these commands
+
+```console
+ros2 launch hovermower_simulation hm_simulation.launch.py
+ros2 launch hovermower_navigation2 localization_launch.py use_sim_time:=true map:=garden_map.yaml
+ros2 launch hovermower_navigation2 navigation2.launch.py use_sim_time:=True
+
+ros2 topic pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped '{ header: {stamp: {sec: 0, nanosec: 0}, frame_id: "map"}, pose: { pose: {position: {x: -6.201, y: -5.219, z: 0.0}, orientation: {w: -0.082}}, } }'
+```
