@@ -92,8 +92,10 @@ class MapProviderNode(Node):
         return response
 
     def save_map(self, request, response):
-        self.save_map()
+        self.get_logger().info('ROS2Mower Map provider: try to save map')
+        self.map_provider.save_map()
         response.success = True
+        self.get_logger().info('ROS2Mower Map provider: map saved')
         return response
     
     def publish_keepout_costmap(self):

@@ -24,7 +24,7 @@ class ros2mower_MapProvider(MapProviderBase):
 
     def save_map(self):
         with open(self.map_file, 'w') as file:
-            yaml.dump(self.map, file)
+            yaml.dump(self.map, file, default_flow_style=False)
 
     def get_area(self, area_index):
         area = MapArea()

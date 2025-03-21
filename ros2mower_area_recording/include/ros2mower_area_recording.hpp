@@ -35,7 +35,6 @@ public:
     /* public attributes*/
 
 private:
-
     /// @brief  store recorded polygons here
     ros2mower_msgs::msg::MapArea _map_area;
 
@@ -53,6 +52,9 @@ private:
 
     /// @brief is polygon recording currently active
     bool _polygon_recording;
+
+    /// @brief last time we toggled polygon recording on/off, Used for message debouncing
+    rclcpp::Time _last_time_joy_button = get_clock()->now();
 
     /// @brief define joystick buttons by parameter
     int _joy_btn_area;
@@ -99,6 +101,15 @@ private:
     /// @brief callback for publishing status messages
     void timer_callback_publisher();
 
+    /// @brief callback function for service client during save operation
+    /// @param future
+    void response_setArea_callback(rclcpp::Client<ros2mower_msgs::srv::SetArea>::SharedFuture future);
+
+    /// @brief callback function for service client during save operation
+    /// @param future
+    void response_save_callback(rclcpp::Client<ros2mower_msgs::srv::SaveMap>::SharedFuture future);
+
+
     /// @brief get current pose related to map
     /// @param global_frame
     /// @param robot_frame
@@ -111,7 +122,6 @@ private:
     /// @brief calculate distance between poses
     /// @return distance in meters
     float getDistanceToLastPose();
-
 };
 
 #endif

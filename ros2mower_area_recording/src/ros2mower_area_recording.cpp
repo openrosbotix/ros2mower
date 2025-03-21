@@ -8,8 +8,27 @@ ROS2Mower_AreaRecording::ROS2Mower_AreaRecording(std::string name) : rclcpp::Nod
   this->declare_node_parameters();
 
   // register services
-  _srv_set_area = this->create_client<ros2mower_msgs::srv::SetArea>("ros2mower/set_area");
-  _srv_save_map = this->create_client<ros2mower_msgs::srv::SaveMap>("ros2mower/save_map");
+  _srv_set_area = this->create_client<ros2mower_msgs::srv::SetArea>("map_provider/set_area");
+  _srv_save_map = this->create_client<ros2mower_msgs::srv::SaveMap>("map_provider/save_map");
+
+  // wait for services to become available
+  while (!this->_srv_set_area->wait_for_service(1s))
+  {
+    if (!rclcpp::ok())
+    {
+      RCLCPP_ERROR(this->get_logger(), "interrupt while waiting for service");
+    }
+    RCLCPP_INFO(this->get_logger(), "SetArea service not available, wait for service");
+  }
+
+  while (!this->_srv_save_map->wait_for_service(1s))
+  {
+    if (!rclcpp::ok())
+    {
+      RCLCPP_ERROR(this->get_logger(), "interrupt while waiting for service");
+    }
+    RCLCPP_INFO(this->get_logger(), "SaveMap service not available, wait for service");
+  }
 
   // register parameter change callback handle
   this->_callbackParameter = this->add_on_set_parameters_callback(
@@ -28,6 +47,10 @@ ROS2Mower_AreaRecording::ROS2Mower_AreaRecording(std::string name) : rclcpp::Nod
   // define timer callback for publishing state
   this->_timer_publisher = this->create_wall_timer(
       100ms, std::bind(&ROS2Mower_AreaRecording::timer_callback_publisher, this));
+
+  rclcpp::Time now = this->get_clock()->now();
+  this->_map_area.name.data = std::to_string(now.seconds());
+  RCLCPP_INFO(this->get_logger(), "Area recording started. Ready for recording area named: %s", this->_map_area.name.data.c_str());
 }
 
 ROS2Mower_AreaRecording::~ROS2Mower_AreaRecording() {}
@@ -85,9 +108,27 @@ rcl_interfaces::msg::SetParametersResult ROS2Mower_AreaRecording::parametersCall
 
 void ROS2Mower_AreaRecording::callbackJoystick(const std::shared_ptr<sensor_msgs::msg::Joy> msg)
 {
-  // toggle polygon recording on/off
-  if (msg->buttons[this->_joy_btn_toggle_poly] == 1)
+  bool button_action = false;
+  // debounce joystick messages
+  if (msg->buttons[this->_joy_btn_toggle_poly] == 1 ||
+      msg->buttons[this->_joy_btn_area] == 1 ||
+      msg->buttons[this->_joy_btn_keepout] == 1 ||
+      msg->buttons[this->_joy_btn_clear] == 1 ||
+      msg->buttons[this->_joy_btn_clear_all] == 1 ||
+      msg->buttons[this->_joy_btn_save] == 1)
   {
+    rclcpp::Duration last_toggle = this->get_clock()->now() - this->_last_time_joy_button;
+    if (last_toggle.seconds() > 0.5)
+    {
+      this->_last_time_joy_button = this->get_clock()->now();
+      button_action = true;
+    }
+  }
+
+  // toggle polygon recording on/off
+  if (msg->buttons[this->_joy_btn_toggle_poly] == 1 && button_action)
+  {
+    this->_last_time_joy_button = this->get_clock()->now();
     // get actual pose from map when activating area recording
     if (this->getCurrentPose(this->_map_frame, this->_base_frame, 1.0) && this->_polygon_recording == false)
     {
@@ -105,54 +146,97 @@ void ROS2Mower_AreaRecording::callbackJoystick(const std::shared_ptr<sensor_msgs
   }
 
   // save last polygon as outer polygon
-  if (msg->buttons[this->_joy_btn_area] == 1)
+  if (msg->buttons[this->_joy_btn_area] == 1 && button_action)
   {
-    if (this->_polygon_recording == true)
+
+    if (this->_polygon_recording == true || this->_polygon.points.size() < 3)
     {
-      RCLCPP_INFO(this->get_logger(), "Area recording: unable to save, toggle polygon recording off first");
+      RCLCPP_INFO(this->get_logger(), "Area recording: unable to save. Either invalid polygon or toggle polygon recording off first");
     }
     else
     {
+
       // add first point as last point to close polygon
-      this->_polygon.push_back(this->_polygon.front());
+      this->_polygon.points.push_back(this->_polygon.points.front());
       this->_map_area.outer_polygon = this->_polygon;
-      RCLCPP_INFO(this->get_logger(), "Area recording: outer polygon saved with %i points", this->_polygon.points.size());
+      RCLCPP_INFO(this->get_logger(), "Area recording: outer polygon saved with %lu points", this->_polygon.points.size());
       this->_polygon.points.clear();
     }
   }
 
   // save last polygon as keepout zone
-  if (msg->buttons[this->_joy_btn_keepout] == 1)
+  if (msg->buttons[this->_joy_btn_keepout] == 1 && button_action)
   {
-    if (this->_polygon_recording == true)
+    if (this->_polygon_recording == true || this->_polygon.points.size() < 3)
     {
-      RCLCPP_INFO(this->get_logger(), "Area recording: unable to save, toggle polygon recording off first");
+      RCLCPP_INFO(this->get_logger(), "Area recording: unable to save. either invalid polygon or toggle polygon recording off first");
     }
     else
     {
       // add first point as last point to close polygon
-      this->_polygon.push_back(this->_polygon.front());
+      this->_polygon.points.push_back(this->_polygon.points.front());
       this->_map_area.keepout_zones.push_back(this->_polygon);
-      RCLCPP_INFO(this->get_logger(), "Area recording: keepout zone saved with %i points", this->_polygon.points.size());
+      RCLCPP_INFO(this->get_logger(), "Area recording: keepout zone saved with %lu points", this->_polygon.points.size());
       this->_polygon.points.clear();
     }
   }
 
-  // save map as area
-  if (msg->buttons[this->_joy_btn_save] == 1)
+  // clear last polygon
+  if (msg->buttons[this->_joy_btn_clear] == 1 && button_action)
   {
-    auto request_save_map = std::make_shared<ros2mower_msgs::srv::SaveMap::Request>();
-    auto result = this->_srv_save_map->async_send_request(request_save_map);
+    RCLCPP_INFO(this->get_logger(), "Area recording: clearing last polygon with %lu points", this->_polygon.points.size());
+    this->_polygon.points.clear();
+  }
 
-    // Wait for the result.
-    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) ==
-        rclcpp::FutureReturnCode::SUCCESS)
+  // clear all polygons
+  if (msg->buttons[this->_joy_btn_clear_all] == 1 && button_action)
+  {
+    RCLCPP_INFO(this->get_logger(), "Area recording: clearing all recorded areas");
+    this->_polygon.points.clear();
+    this->_map_area.keepout_zones.clear();
+    this->_map_area.outer_polygon.points.clear();
+  }
+
+  // save map as area
+  if (msg->buttons[this->_joy_btn_save] == 1 && button_action)
+  {
+    // first check if map is not empty
+    if (this->_map_area.outer_polygon.points.size() == 0)
     {
-      RCLCPP_INFO(this->get_logger(), "save ok: %i", result.get()->success);
+      RCLCPP_INFO(this->get_logger(), "Area recording: map empty, unable to save");
     }
     else
     {
-      RCLCPP_ERROR(this->get_logger(), "Failed to call service save map of map provider");
+      // set new area to map provider
+      auto request_setArea = std::make_shared<ros2mower_msgs::srv::SetArea::Request>();
+      request_setArea->area = this->_map_area;
+
+      auto result_setArea = this->_srv_set_area->async_send_request(request_setArea, std::bind(&ROS2Mower_AreaRecording::response_setArea_callback, this, std::placeholders::_1));
+
+      // // Wait for the result of set_area.
+      // if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_setArea) ==
+      //     rclcpp::FutureReturnCode::SUCCESS)
+      // {
+      //   RCLCPP_INFO(this->get_logger(), "Area recording: setArea ok. Count of areas %i", result_setArea.get()->count);
+
+      //   auto request_save_map = std::make_shared<ros2mower_msgs::srv::SaveMap::Request>();
+      //   auto result = this->_srv_save_map->async_send_request(request_save_map);
+
+      //   // Wait for the result of save map.
+      //   if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) ==
+      //       rclcpp::FutureReturnCode::SUCCESS)
+      //   {
+      //     RCLCPP_INFO(this->get_logger(), "Area recording: save ok. Status %i", result.get()->success);
+      //   }
+      //   else
+      //   {
+      //     RCLCPP_ERROR(this->get_logger(), "Area recording: Failed to call service save map of map provider");
+      //   }
+      // }
+      // else
+      // {
+      //   RCLCPP_ERROR(this->get_logger(), "Area recording: Failed to call service setArea of map provider");
+      // }
     }
   }
 
@@ -176,6 +260,59 @@ void ROS2Mower_AreaRecording::callbackJoystick(const std::shared_ptr<sensor_msgs
         this->_last_pose_map = this->_actual_pose_map;
       }
     }
+  }
+}
+
+void ROS2Mower_AreaRecording::response_setArea_callback(rclcpp::Client<ros2mower_msgs::srv::SetArea>::SharedFuture future)
+{
+
+  try
+  {
+    auto check = future.get()->count;
+    if (check > 0)
+    {
+      RCLCPP_INFO(this->get_logger(), "Area recording: setArea ok. Count of areas %i", future.get()->count);
+
+      auto request_save_map = std::make_shared<ros2mower_msgs::srv::SaveMap::Request>();
+      //auto result = this->_srv_save_map->async_send_request(request_save_map, std::bind(&ROS2Mower_AreaRecording::response_save_callback, this, std::placeholders::_1));
+      auto result_future = this->_srv_save_map->async_send_request(request_save_map);
+
+      // Do this instead of rclcpp::spin_until_future_complete()
+      std::future_status status = result_future.wait_for(10s);  // timeout to guarantee a graceful finish
+      if (status == std::future_status::ready) {
+          RCLCPP_INFO(this->get_logger(), "Area recording: save ok. Status %i", result_future.get()->success);
+         
+      }
+    }
+    else
+    {
+      RCLCPP_ERROR(this->get_logger(), "Area recording: Failed to call service setArea of map provider");
+    }
+  }
+  catch (const std::exception &e)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Area recording: Failed to call service setArea of map provider");
+  }
+}
+
+void ROS2Mower_AreaRecording::response_save_callback(rclcpp::Client<ros2mower_msgs::srv::SaveMap>::SharedFuture future)
+{
+
+  try
+  {
+    auto check = future.get()->success;
+    if (check == true)
+    {
+      RCLCPP_INFO(this->get_logger(), "Area recording: save ok. Status %i", future.get()->success);
+    }
+    else
+    {
+      RCLCPP_ERROR(this->get_logger(), "Area recording: Failed to call service save map of map provider");
+    }
+  }
+  catch (const std::exception &e)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Area recording: Failed to call service setArea of map provider");
   }
 }
 
